@@ -19,7 +19,18 @@ static char *buffer;
 
 void usage()
 {
-	fprintf(stderr,"Usage: udpsend <ip address> <port>\n");
+	fprintf(stderr,
+		"Usage: udpsend [options] <ip address> <port>\n"
+		"Arguments: \n"
+		"    <address>     Destination address\n"
+		"    <port>        Destination port\n"
+		"Options:\n"
+		"    -b SIZE       Data package size. (Default: 1024)\n"        
+		"    -a ADDRESS    Local IP address. (Default: Any).\n"
+        "    -p PORT       Local port.\n"
+		"    -i INTERVAL   Time interval between packages\n"
+		"    -h            Print this message.\n"
+		);
 }
 
 #ifdef USE_GETTIMEOFDAY

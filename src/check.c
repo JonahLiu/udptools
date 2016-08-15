@@ -41,6 +41,32 @@ int check_counter32(char* data, size_t size)
 	return 0;
 }
 
+int check_timestamp(char *buffer, size_t size)
+{
+	static unsigned int idx=0;
+	static unsigned int total=0;
+	static double lastTime=0;
+	static double lastReport=0;
+	unsigned int i;
+	double t;
+	if(sscanf(buffer,"%d:%lf",&i,&t)!=2)
+		fprintf(stderr,"Wrong message format\n");
+	total++;
+	if(i>idx+1)
+	{
+		fprintf(stderr,"Lost %d in %lf sec\n", i-idx-1, t-lastTime);
+		fprintf(stderr,"%d message received\n",total);
+	}
+	if(t-lastReport>1)
+	{
+		fprintf(stderr,"%d message received\n",total);
+		lastReport=t;
+	}
+	idx=i;
+	lastTime=t;
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	int next_opt;
@@ -63,6 +89,8 @@ int main(int argc, char** argv)
 		method=argv[optind];
 		if(strcmp(method,"counter32")==0){
 			check=check_counter32;
+		}else if(strcmp(method,"timestamp")==0){
+			check=check_timestamp;
 		}else{
 			logerr("Unsupported method - %s", method);
 			return -1;
