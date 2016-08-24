@@ -8,9 +8,14 @@
 #include <netdb.h>
 #include <time.h>
 #include <string.h>
+#include <sched.h>
 
 #ifdef __VXWORKS__
 #include <sockLib.h>
+#endif
+
+#ifdef __CYGWIN__
+#include <windows.h>
 #endif
 
 static struct sockaddr_in sa;
@@ -28,12 +33,25 @@ void usage()
 		"    -b SIZE       Data package size. (Default: 1024)\n"        
 		"    -a ADDRESS    Local IP address. (Default: Any).\n"
         "    -p PORT       Local port.\n"
-		"    -i INTERVAL   Time interval between packages\n"
+		"    -i INTERVAL   Time interval between packages(e.g. 0.001 for 1ms)\n"
 		"    -h            Print this message.\n"
 		);
 }
 
-#ifdef USE_GETTIMEOFDAY
+#if defined(__CYGWIN__)
+
+double getTime()
+{
+	double second;
+	LARGE_INTEGER nFreq;
+	LARGE_INTEGER nCount;
+	QueryPerformanceFrequency(&nFreq);
+	QueryPerformanceCounter(&nCount);
+	second = (double)nCount.QuadPart/nFreq.QuadPart;
+	return second;
+}
+
+#elif defined(USE_GETTIMEOFDAY)
 double getTime()
 {
 	struct timeval tv;
@@ -77,7 +95,7 @@ int main(int argc, char **argv)
 			case 'a': ipstr=optarg; break;
 			case 'p': port=atoi(optarg); break;
 			case 'i': interval=atof(optarg); break;
-			case 'h': usage(); break;
+			case 'h': usage(); return 0;
 			case -1: break;
 			default: fprintf(stderr, "Unknown option -%c %s\n",
 						 next_opt, optarg);
@@ -145,6 +163,9 @@ int main(int argc, char **argv)
 			sprintf(buffer,"%08d:%022.6lf\n",idx++,now);
 			sendto(fd, buffer, size, 0, (struct sockaddr*)&sa, sa_len);
 			last=now;
+			sched_yield();
+			//printf("%f\n", now);
+			//sleep(1);
 		}
 	}
 	return 0;

@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 		switch(next_opt){
 			case 'b': size=atol(optarg); break;
 			case 'a': ipstr=optarg; break;
-			case 'h': usage(); break;
+			case 'h': usage(); return 0;
 			case -1: break;
 			default: fprintf(stderr, "Unknown option -%c %s\n",
 						 next_opt, optarg);
